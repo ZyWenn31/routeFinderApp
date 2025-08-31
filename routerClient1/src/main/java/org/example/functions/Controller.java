@@ -27,15 +27,31 @@ public class Controller {
         }
     }
 
+    public List<String> getCitiesFromREST(){
+        return citiesRestTemplate.getForObject(citiesUrl, List.class);
+    }
+
+    public List<String> getFlightTypeFromREST(){
+        return flightTypeRestTemplate.getForObject(flightTypeUrl, List.class);
+    }
+
+    public List<RouteResponseClass> getRouteFromREST(HttpEntity<Map<String, String>> httpEntity){
+        return restTemplate.exchange(
+                routeUrl,
+                HttpMethod.POST,
+                httpEntity,
+                new ParameterizedTypeReference<List<RouteResponseClass>>() {}
+        ).getBody();
+    }
+
     private void getRoute(){
-        final List<String> chosenCities = InformationOfRoute.chooseCities(citiesRestTemplate.getForObject(citiesUrl, List.class));
+        final List<String> chosenCities = InformationOfRoute.chooseCities(this.getCitiesFromREST());
 
         final Map<String, String> data = new LinkedHashMap<>();
         data.put("departureCity", chosenCities.get(0));
         data.put("arrivalCity", chosenCities.get(1));
         data.put("departure", "2025-05-08T06:00:00Z");
-        data.put("type", InformationOfRoute.chooseFlightType(flightTypeRestTemplate.getForObject(flightTypeUrl, List.class)));
-
+        data.put("type", InformationOfRoute.chooseFlightType(this.getFlightTypeFromREST()));
 
         System.out.println("Начат поиск маршрута");
         System.out.println("Город отправления: " + data.get("departureCity"));
@@ -49,13 +65,7 @@ public class Controller {
         HttpEntity<Map<String, String>> httpEntity = new HttpEntity<>(data);
 
 
-        List<RouteResponseClass> responseClasses =
-                restTemplate.exchange(
-                        routeUrl,
-                        HttpMethod.POST,
-                        httpEntity,
-                        new ParameterizedTypeReference<List<RouteResponseClass>>() {}
-                ).getBody();
+        List<RouteResponseClass> responseClasses = getRouteFromREST(httpEntity);
 
         InformationOfRoute.outputOfRoute(responseClasses);
     }

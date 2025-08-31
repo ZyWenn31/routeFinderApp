@@ -1,8 +1,5 @@
 package org.example.responseModel;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 
 public class RouteResponseClass {
